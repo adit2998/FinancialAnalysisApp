@@ -7,6 +7,7 @@ function App() {
     <div>
       <AppNavbar />
       <LandingPage />
+      
     </div>
   );
 }

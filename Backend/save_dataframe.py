@@ -10,7 +10,7 @@ collection = db['historical_financials']
 
 def save_dataframe_to_csv(ticker):
     historical_financials_df = makeCompanyDataframe(ticker)
-    historical_financials_df.to_csv('test.csv', index=True)
+    historical_financials_df.to_csv('processed_dataframe.csv', index=True)
 
 def save_dataframe_to_db(ticker, collection):
     historical_financials_df = makeCompanyDataframe(ticker)   
@@ -38,10 +38,12 @@ def load_collection_to_dataframe(ticker, collection):
     financials_data = document.get("financials", [])
     dataframe = pd.DataFrame(financials_data)
     
-    dataframe.to_csv('extracted.csv', index=True)
+    dataframe.to_csv('extracted_dataframe.csv', index=True)
 
 
-# Test run
+
+# save_dataframe_to_csv('aapl')
+
 # save_dataframe_to_db('aapl', collection)
 
 # load_collection_to_dataframe('aapl', collection)

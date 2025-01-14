@@ -7,8 +7,7 @@ const CompaniesListPage = () => {
     { title: 'Card 1', text: 'This is a placeholder card for company 1.' },
     { title: 'Card 2', text: 'This is a placeholder card for company 2.' },
     { title: 'Card 3', text: 'This is a placeholder card for company 3.' },
-    { title: 'Card 4', text: 'This is a placeholder card for company 4.' },
-    { title: 'Card 5', text: 'This is a placeholder card for company 5.' }
+    { title: 'Card 4', text: 'This is a placeholder card for company 4.' },    
   ];
 
   return (

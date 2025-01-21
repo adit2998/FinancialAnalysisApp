@@ -42,7 +42,7 @@ def load_collection_to_dataframe(ticker, collection):
 
 
 
-# save_dataframe_to_csv('aapl')
+save_dataframe_to_csv('goog')
 
 # save_dataframe_to_db('aapl', collection)
 

@@ -1,7 +1,6 @@
 import requests
-import pdfplumber
 from enum import Enum
-from create_dataframe import getCIKNumber
+from sec_api_utils import getCIKNumber
 from weasyprint import HTML
 import os
 import pymongo
@@ -139,4 +138,4 @@ url = get_latest_form_url(cik, formType)
 
 # save_pdf_to_mongo(ticker, formType, url)
 
-retrieve_pdf_from_mongo("aapl_10-K_report.pdf", "retrieved_report.pdf")
+# retrieve_pdf_from_mongo("aapl_10-K_report.pdf", "retrieved_report.pdf")

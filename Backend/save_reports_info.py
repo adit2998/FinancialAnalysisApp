@@ -130,12 +130,12 @@ def retrieve_pdf_from_mongo(filename: str, local_path: str):
         print(f"File '{filename}' not found in MongoDB.")
 
 
-ticker = 'aapl'
+ticker = 'ai'
 formType = FormType.TEN_K
 cik = getCIKNumber(ticker)
 url = get_latest_form_url(cik, formType)
 # save_form(ticker, formType, url)
 
-# save_pdf_to_mongo(ticker, formType, url)
+save_pdf_to_mongo(ticker, formType, url)
 
-# retrieve_pdf_from_mongo("aapl_10-K_report.pdf", "retrieved_report.pdf")
+retrieve_pdf_from_mongo(f"{ticker}_{formType}_report.pdf", f"{ticker}_{formType}_report.pdf")

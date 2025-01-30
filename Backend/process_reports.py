@@ -3,6 +3,17 @@ import re
 import pymongo
 import gridfs
 
+import re
+import spacy
+
+# Load spaCy's small English model
+nlp = spacy.load("en_core_web_sm")
+
+def prettify_text_spacy(text):
+    doc = nlp(text.lower())  # Convert text to lowercase first
+    sentences = [sent.text.capitalize() for sent in doc.sents]
+    return " ".join(sentences)
+
 def open_document(mongo_uri, db_name, filename):
      # Connect to MongoDB
     client = pymongo.MongoClient(mongo_uri)
@@ -31,7 +42,7 @@ def extract_headers(document):
 
     # Extract text from the first few pages (TOC is usually at the beginning)
     for page_num in range(min(10, len(document))):  # Check first 10 pages
-        text += document[page_num].get_text()    
+        text += document[page_num].get_text()
 
     # Identify potential TOC entries using regex
     toc_pattern = re.compile(r"(Item\s\d+[A-Z]*\.\s+.+?)\s+\d{1,4}", re.MULTILINE)
@@ -39,48 +50,80 @@ def extract_headers(document):
 
     # Clean up and store results
     toc = [match.strip() for match in matches]
-    headers = [re.sub(r'^Item \d+[A-Z]?\.\n', '', item) for item in toc]
+    headers = [re.sub(r'^Item \d+[A-Z]?\.\s*', '', item) for item in toc]
 
     return headers
 
+def detect_toc_end(document, max_toc_pages=10):
+    """
+    Detects the last page of the Table of Contents dynamically.
+
+    :param document: The parsed PDF document (list of pages).
+    :param max_toc_pages: Maximum pages to scan for TOC (default: 10).
+    :return: Page number where TOC ends (first actual section start).
+    """
+    toc_start = None
+    toc_end_page = 0  # Default to first page if TOC is not found
+
+    for page_num in range(min(max_toc_pages, len(document))):  # Scan first few pages
+        text = document[page_num].get_text()
+        
+        # Detect "Table of Contents" to mark TOC start
+        if not toc_start and re.search(r"Table of Contents", text, re.IGNORECASE):
+            toc_start = page_num  # First occurrence of TOC
+        
+        # If TOC was found, find the first "Item X."
+        if toc_start is not None and re.search(r"Item\s*\d+[A-Z]*\.", text):
+            toc_end_page = page_num  # First actual section start
+            break  # Stop as soon as we find the first real "Item X."
+
+    return toc_end_page + 1  # Start extracting from the next page after TOC
+
 def extract_section(document, section_heading):
     """
-    Extracts text from a specific section of a PDF.
+    Extracts text from a specific section of a PDF while dynamically skipping the Table of Contents.
 
-    :param pdf_path: Path to the PDF file.
+    :param document: The parsed PDF document (list of pages).
     :param section_heading: The heading of the section to extract.
     :return: Extracted text from the specified section.
     """
-    try:                
-        full_text = ""
-        
-        # Extract text from all pages
-        for page_num in range(len(document)):
-            page = document[page_num]
-            full_text += page.get_text()
+    try:
+        # Detect TOC end dynamically
+        toc_end_page = detect_toc_end(document)        
 
-        # Normalize text and split into lines
-        lines = full_text.split("\n")
-        section_text = []
-        capture = False
-        
-        # Normalize section_heading (allow spaces between "Item x." and header)
-        normalized_heading = re.sub(r'\s+', ' ', section_heading.strip())  # Collapse multiple spaces
-        
-        for line in lines:
-            # Use regex to find the Item x. format with varying spaces
-            if re.search(rf"Item\s*[\dA-Z]+\.\s*{re.escape(normalized_heading)}", line, re.IGNORECASE):
-                capture = True  # Start capturing text
-            elif capture and line.strip().isupper():  # New heading detected
-                break
-            elif capture:
-                section_text.append(line.strip())
-        
-        return "\n".join(section_text) if section_text else "Section not found."
-    
+        full_text = ""
+
+        # Extract text starting after the TOC
+        for page_num in range(toc_end_page, len(document)):  
+            full_text += document[page_num].get_text() + "\n"  
+
+        # Normalize text for better matching
+        full_text = re.sub(r'\s+', ' ', full_text).upper()  
+        normalized_heading = re.sub(r'\s+', ' ', section_heading.strip()).upper()  
+
+        # Search for the actual section start
+        match = re.search(rf"(ITEM\s*\d+[A-Z]*\.\s*{re.escape(normalized_heading)})", full_text, re.IGNORECASE)
+        if not match:
+            # print(f"Section heading '{normalized_heading}' not found.")
+            return "Section not found."
+
+        start_idx = match.start()
+        # print(f"Found section '{normalized_heading}' at position: {start_idx}")
+
+        # Search for the next "Item X." to determine section end
+        next_section_match = re.search(r"(ITEM\s*\d+[A-Z]*\.)", full_text[start_idx+1:], re.IGNORECASE)
+        end_idx = next_section_match.start() + start_idx if next_section_match else len(full_text)
+
+        # print(f"Next section found at position: {end_idx}")
+
+        # Extract section text
+        extracted_section = full_text[start_idx:end_idx].strip()
+
+        return prettify_text_spacy(extracted_section) if extracted_section else "Section not found."
+
     except Exception as e:
         return f"Error: {str(e)}"
-
+    
 
 def extract_content(mongo_uri, db_name, filename):
     
@@ -98,17 +141,35 @@ def extract_content(mongo_uri, db_name, filename):
 
     return info_dict
 
+def extract_content_with_sections(mongo_uri, db_name, ticker, filename):
+    
+    document = open_document(mongo_uri, db_name, filename)
+    headers = extract_headers(document)    
+    
+    sections_dict = {}
+
+    for header in headers:
+        sections_dict[header] = extract_section(document, header)        
+
+    info_dict = {
+        'ticker': ticker,
+        'file_name': filename,
+        'sections': sections_dict
+    }
+
+    document.close()
+
+    return info_dict
 
 
 # Example usage
 mongo_uri = "mongodb://localhost:27017"
 db_name = "financial_reports"
-filename = "aapl_10-K_report.pdf"
+ticker = 'ai'
+filename = "ai_10-K_report.pdf"
 
-report_content = extract_content(mongo_uri, db_name, filename)
-# print(content['Business'])
-
-
+report_content = extract_content_with_sections(mongo_uri, db_name, ticker, filename)
+# print(report_content['Business'])
 
 def write_dict_to_mongo(mongo_uri, db_name, collection_name, data_dict):
     """

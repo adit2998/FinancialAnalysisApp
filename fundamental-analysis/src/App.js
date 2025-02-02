@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 import LandingPage from './components/LandingPage';
-import CompaniesListPage from './components/CompaniesListPage';
+import CompaniesList from './components/CompaniesList';
 import AppNavbar from './components/Navbar';
 
 function App() {
@@ -11,7 +11,8 @@ function App() {
       <AppNavbar />
       <Routes>
         <Route path="/" element={<LandingPage />} />        
-        <Route path="/companies" element={<CompaniesListPage />} />
+        <Route path="/companies" element={<CompaniesList />} />
+        <Route path="/companies/:ticker" element={<LandingPage />} />
       </Routes>
     </Router>
   );

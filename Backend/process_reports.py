@@ -4,15 +4,17 @@ import pymongo
 import gridfs
 
 import re
-import spacy
+import json
 
-# Load spaCy's small English model
-nlp = spacy.load("en_core_web_sm")
-
-def prettify_text_spacy(text):
-    doc = nlp(text.lower())  # Convert text to lowercase first
-    sentences = [sent.text.capitalize() for sent in doc.sents]
-    return " ".join(sentences)
+def prettify_text(text):
+    # Convert the entire text to lowercase
+    text = text.lower()
+    
+    # Capitalize the first letter of each sentence
+    sentences = re.split(r'(?<=[.!?])\s+', text)  # Split at sentence boundaries
+    formatted_text = ' '.join(sentence.capitalize() for sentence in sentences)
+    
+    return formatted_text
 
 def open_document(mongo_uri, db_name, filename):
      # Connect to MongoDB
@@ -118,8 +120,8 @@ def extract_section(document, section_heading):
 
         # Extract section text
         extracted_section = full_text[start_idx:end_idx].strip()
-
-        return prettify_text_spacy(extracted_section) if extracted_section else "Section not found."
+        # return extracted_section
+        return prettify_text(extracted_section) if extracted_section else "Section not found."
 
     except Exception as e:
         return f"Error: {str(e)}"
@@ -166,9 +168,11 @@ def extract_content_with_sections(mongo_uri, db_name, ticker, filename):
 mongo_uri = "mongodb://localhost:27017"
 db_name = "financial_reports"
 ticker = 'ai'
-filename = "ai_10-K_report.pdf"
+filename = "ai_10-Q_report.pdf"
 
 report_content = extract_content_with_sections(mongo_uri, db_name, ticker, filename)
+
+# print(report_content)
 # print(report_content['Business'])
 
 def write_dict_to_mongo(mongo_uri, db_name, collection_name, data_dict):
@@ -203,4 +207,4 @@ mongo_uri = "mongodb://localhost:27017"
 db_name = "deepValDb"
 collection_name = "report_info"
 
-print('New entry created: ', write_dict_to_mongo(mongo_uri, db_name, collection_name, report_content))
+# print('New entry created: ', write_dict_to_mongo(mongo_uri, db_name, collection_name, report_content))

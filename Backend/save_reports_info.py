@@ -131,11 +131,14 @@ def retrieve_pdf_from_mongo(filename: str, local_path: str):
 
 
 ticker = 'ai'
-formType = FormType.TEN_K
+formType = FormType.TEN_Q
 cik = getCIKNumber(ticker)
 url = get_latest_form_url(cik, formType)
+
+# print(url)
 # save_form(ticker, formType, url)
 
-save_pdf_to_mongo(ticker, formType, url)
+# save_pdf_to_mongo(ticker, formType, url)
 
-retrieve_pdf_from_mongo(f"{ticker}_{formType}_report.pdf", f"{ticker}_{formType}_report.pdf")
+# retrieve_pdf_from_mongo(f"{ticker}_{formType}_report.pdf", f"{ticker}_{formType}_report.pdf")
+# retrieve_pdf_from_mongo("ai_10-Q_report.pdf", "ai_10-Q_report.pdf")

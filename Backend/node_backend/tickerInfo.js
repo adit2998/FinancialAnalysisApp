@@ -10,7 +10,7 @@ const tickerSchema = new mongoose.Schema({
 });
 
 // Create the model
-const Ticker = mongoose.model('historical_financial', tickerSchema);
+const Ticker = mongoose.model('historical_financials', tickerSchema);
 
 // Function to get all tickers along with financials
 const getTickers = async () => {

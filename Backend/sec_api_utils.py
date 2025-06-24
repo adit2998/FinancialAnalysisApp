@@ -15,6 +15,13 @@ def getCIKNumber(ticker, headers=headers):
             return cik
     raise ValueError(f"Ticker {ticker} not found in SEC database")
 
+def getCompanyInfo(ticker, headers=headers):
+    cik = getCIKNumber(ticker)
+    headers = headers
+    url = f"https://data.sec.gov/submissions/CIK{cik}.json"
+    company_json = requests.get(url, headers=headers).json()
+
+    return company_json
 
 def getSubmissionData(ticker, headers=headers):
     cik = getCIKNumber(ticker)

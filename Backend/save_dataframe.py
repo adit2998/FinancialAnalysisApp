@@ -4,13 +4,52 @@ import pandas as pd
 
 # Connect to MongoDB
 client = MongoClient("mongodb://localhost:27017/")  
-db = client['deepValDb']
-collection = db['historical_financials']
+db = client['testDb']
+collection = db['financial_trends']
 
 
 def save_dataframe_to_csv(ticker):
     historical_financials_df = makeCompanyDataframe(ticker)
     historical_financials_df.to_csv('processed_dataframe.csv', index=True)
+
+def save_financial_trends(ticker, collection):
+    df = makeCompanyDataframe(ticker) 
+    # Initialize the financials dictionary
+    financials = {}
+    for _, row in df.iterrows():
+        fact_name = row['fact']
+
+        # Skip if the fact_name is NaN or None
+        if pd.isna(fact_name):
+            continue
+
+        series = []
+        for date, value in row.drop('fact').items():
+            if pd.notna(date) and pd.notna(value):
+                # Convert date to string just in case it's not
+                series.append({
+                    'date': str(date),
+                    'value': float(value)
+                })
+
+        # Only add the series if there's at least one valid entry
+        if series:
+            financials[str(fact_name)] = series
+    
+    # Prepare final document
+    company_doc = {
+        'ticker': ticker.lower(),        
+        'financials': financials
+    }
+
+    collection.update_one(
+        {'ticker': ticker.lower()},
+        {'$set': company_doc},
+        upsert=True
+    )
+
+    print(f"Saved financials for {ticker} to MongoDB.")
+
 
 def save_dataframe_to_db(ticker, collection):
     historical_financials_df = makeCompanyDataframe(ticker)   
@@ -42,7 +81,9 @@ def load_collection_to_dataframe(ticker, collection):
 
 
 
-save_dataframe_to_csv('goog')
+save_financial_trends('goog', collection)
+
+# save_dataframe_to_csv('goog')
 
 # save_dataframe_to_db('aapl', collection)
 

@@ -5,6 +5,7 @@ import LandingPage from './components/LandingPage';
 import CompaniesList from './components/CompaniesList';
 import AppNavbar from './components/Navbar';
 import CompanyTrendsPage from "./components/CompanyTrendsPage";
+import CompanyTrends from "./components/CompanyTrends";
 
 function App() {
   return (
@@ -13,7 +14,7 @@ function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />        
         <Route path="/companies" element={<CompaniesList />} />
-        <Route path="/company/:ticker/trends" element={<CompanyTrendsPage />} />
+        <Route path="/company/:ticker/trends" element={<CompanyTrends />} />
       </Routes>
     </Router>
   );

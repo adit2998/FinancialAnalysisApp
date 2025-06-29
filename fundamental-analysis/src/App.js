@@ -4,8 +4,8 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import LandingPage from './components/LandingPage';
 import CompaniesList from './components/CompaniesList';
 import AppNavbar from './components/Navbar';
-import CompanyTrendsPage from "./components/CompanyTrendsPage";
 import CompanyTrends from "./components/CompanyTrends";
+import CompanyReports from "./components/CompanyReports";
 
 function App() {
   return (
@@ -15,6 +15,7 @@ function App() {
         <Route path="/" element={<LandingPage />} />        
         <Route path="/companies" element={<CompaniesList />} />
         <Route path="/company/:ticker/trends" element={<CompanyTrends />} />
+        <Route path="/company/:ticker/reports" element={<CompanyReports />} />
       </Routes>
     </Router>
   );

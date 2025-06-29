@@ -41,6 +41,9 @@ const TickersList = () => {
                   {/* Add any additional information here */}                  
                   <p>{company.sicDescription}</p>
                 </Card.Text>
+                <Link to={`/company/${company.ticker}/reports`}>
+                  <Button variant="primary">View reports</Button>
+                </Link>
                 <Link to={`/company/${company.ticker}/trends`}>
                   <Button variant="primary">View trends</Button>
                 </Link>

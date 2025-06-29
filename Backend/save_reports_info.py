@@ -131,7 +131,7 @@ def retrieve_pdf_from_mongo(filename: str, local_path: str):
 
 
 ticker = 'amzn'
-formType = FormType.TEN_K
+formType = FormType.TEN_Q
 cik = getCIKNumber(ticker)
 url = get_latest_form_url(cik, formType)
 

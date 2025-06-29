@@ -172,8 +172,6 @@ filename = "ai_10-Q_report.pdf"
 
 report_content = extract_content_with_sections(mongo_uri, db_name, ticker, filename)
 
-# print(report_content)
-# print(report_content['Business'])
 
 def write_dict_to_mongo(mongo_uri, db_name, collection_name, data_dict):
     """
@@ -202,9 +200,17 @@ def write_dict_to_mongo(mongo_uri, db_name, collection_name, data_dict):
     # Return the ID of the inserted document
     return str(result.inserted_id)
 
+def process_and_save_report(mongo_uri, db_name_read, db_name_write, collection_name, ticker, filename):
+    report_content = extract_content_with_sections(mongo_uri, db_name_read, ticker, filename)
+    result = write_dict_to_mongo(mongo_uri, db_name_write, collection_name, report_content)
+    return result
 
 mongo_uri = "mongodb://localhost:27017"
-db_name = "deepValDb"
-collection_name = "report_info"
+db_name_read = "financial_reports"
+db_name_write = "testDb"
+collection_name = "company_reports"
+ticker = 'amzn'
+filename = "amzn_10-Q_report.pdf"
 
 # print('New entry created: ', write_dict_to_mongo(mongo_uri, db_name, collection_name, report_content))
+print(process_and_save_report(mongo_uri, db_name_read, db_name_write, collection_name, ticker, filename))

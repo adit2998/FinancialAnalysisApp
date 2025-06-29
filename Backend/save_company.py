@@ -26,4 +26,4 @@ def save_company_details(ticker):
     result = companies_collection.insert_one(company_data)
     print(f"Inserted document with _id: {result.inserted_id}")
 
-# save_company_details('goog')
+save_company_details('amzn')
